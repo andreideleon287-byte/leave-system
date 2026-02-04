@@ -3,70 +3,51 @@
 <head>
     <title>Manager Portal</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #008081; border-bottom: 2px solid #008081; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        .btn { padding: 8px 12px; border: none; cursor: pointer; border-radius: 4px; color: white; font-weight: bold; }
-        .btn-approve { background: #28a745; margin-right: 5px; }
-        .btn-reject { background: #dc3545; }
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; max-width: 700px; margin: auto; }
+        h2 { color: #008081; border-bottom: 2px solid #008081; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        .btn { padding: 8px; border: none; border-radius: 4px; color: white; cursor: pointer; font-weight: bold; }
+        .btn-ok { background: #28a745; margin-right: 5px; }
+        .btn-no { background: #dc3545; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>Manager Portal: <span id="mgrDept"></span></h2>
-    <div id="loading">Loading...</div>
-    <table id="requestTable" style="display:none;">
-        <thead><tr><th>Employee</th><th>Dates</th><th>Reason</th><th>Action</th></tr></thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+<div class="card">
+    <h2>Manager Portal: <span id="deptName"></span></h2>
+    <div id="list">Loading...</div>
 </div>
-<script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyfMmmES2xTiMAOIu7OCtlI3NqxMvV82_d143pMCJ620QM_gc4V2C7nhdI9x9iANXEL9A/exec';
-    const urlParams = new URLSearchParams(window.location.search);
-    const myDept = urlParams.get('dept');
-    document.getElementById('mgrDept').innerText = myDept || "All";
 
-    function loadRequests() {
-        tbody.innerHTML += `<tr>
-    <td><strong>${req.name}</strong></td>
-    <td>
-        <span style="color: #008081; font-weight: bold;">${req.leaveType}</span><br>
-        <small>${req.leaveDates}</small>
-    </td>
-    <td>${req.reason}</td>
-    <td>
-        <button class="btn btn-approve" onclick="updateStatus(${req.row}, 'Approved')">Approve</button>
-        <button class="btn btn-reject" onclick="updateStatus(${req.row}, 'Disapproved')">Reject</button>
-    </td>
-</tr>`;
-        fetch(scriptURL + "?action=getPending&dept=" + encodeURIComponent(myDept))
-            .then(res => res.json()).then(data => {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('requestTable').style.display = data.length ? 'table' : 'none';
-                const tbody = document.getElementById('tableBody');
-                tbody.innerHTML = '';
-                data.forEach(req => {
-                    tbody.innerHTML += `<tr><td>${req.name}</td><td>${req.leaveDates}</td><td>${req.reason}</td>
-                        <td><button class="btn btn-approve" onclick="updateStatus(${req.row}, 'Approved')">Approve</button>
-                        <button class="btn btn-reject" onclick="updateStatus(${req.row}, 'Disapproved')">Reject</button></td></tr>`;
-                });
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyeSTQhQ733OekwBLvJTE0iwsFPwl4PE8_2sOmOPtdxHj4y11k4RLljfW5nW53Ol9RW7A/exec';
+    const params = new URLSearchParams(window.location.search);
+    const myDept = params.get('dept');
+    document.getElementById('deptName').innerText = myDept;
+
+    function load() {
+        fetch(scriptURL + "?action=getPending&dept=" + myDept).then(r => r.json()).then(data => {
+            let html = '<table><tr><th>Name</th><th>Info</th><th>Action</th></tr>';
+            data.forEach(r => {
+                html += `<tr><td>${r.name}</td><td><b>${r.type}</b><br>${r.dates}</td>
+                <td><button class="btn btn-ok" onclick="update(${r.row},'Approved')">Approve</button>
+                <button class="btn btn-no" onclick="update(${r.row},'Disapproved')">Reject</button></td></tr>`;
             });
+            document.getElementById('list').innerHTML = data.length ? html + '</table>' : 'No pending requests.';
+        });
     }
 
-    function updateStatus(row, status) {
-        const pin = prompt("Enter your 4-digit PIN:");
+    function update(row, status) {
+        const pin = prompt("Enter 4-digit PIN:");
         if (!pin) return;
         const fd = new FormData();
         fd.append('action', 'updateStatus'); fd.append('row', row); fd.append('status', status); fd.append('pin', pin); fd.append('dept', myDept);
-        fetch(scriptURL, { method: 'POST', body: fd }).then(res => res.text()).then(res => {
-            alert(res === "Success" ? "Updated!" : "Error: " + res);
-            loadRequests();
+        fetch(scriptURL, { method: 'POST', body: fd }).then(r => r.text()).then(res => {
+            alert(res === "Success" ? "Done!" : "Error: " + res);
+            load();
         });
     }
-    loadRequests();
+    load();
 </script>
 </body>
-
 </html>
