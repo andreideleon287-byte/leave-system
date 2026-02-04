@@ -55,7 +55,18 @@
             <option value="Admin">Admin (Jack)</option>
             <option value="Marketing">Marketing (Simon)</option>
         </select>
-
+<label>Leave Type 请假类型</label>
+<select name="leaveType" required>
+    <option value="">-- Select Type --</option>
+    <option value="Paid Leave">Paid Leave (有薪假)</option>
+    <option value="Unpaid Leave">Unpaid Leave (无薪假)</option>
+    <option value="Paid Sick Leave">Paid Sick Leave (有薪病假)</option>
+    <option value="Unpaid Sick Leave">Unpaid Sick Leave (无薪病假)</option>
+    <option value="Maternity Leave">Maternity Leave (产假)</option>
+    <option value="Paternity Leave">Paternity Leave (陪产假)</option>
+    <option value="Others">Others (其他)</option>
+</select>
+    
         <label>Leave Dates 请假日期</label>
         <input type="text" name="leaveDates" placeholder="e.g. Feb 10 - Feb 12" required>
 
@@ -121,4 +132,5 @@
 </script>
 
 </body>
+
 </html>
