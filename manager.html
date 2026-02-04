@@ -29,6 +29,18 @@
     document.getElementById('mgrDept').innerText = myDept || "All";
 
     function loadRequests() {
+        tbody.innerHTML += `<tr>
+    <td><strong>${req.name}</strong></td>
+    <td>
+        <span style="color: #008081; font-weight: bold;">${req.leaveType}</span><br>
+        <small>${req.leaveDates}</small>
+    </td>
+    <td>${req.reason}</td>
+    <td>
+        <button class="btn btn-approve" onclick="updateStatus(${req.row}, 'Approved')">Approve</button>
+        <button class="btn btn-reject" onclick="updateStatus(${req.row}, 'Disapproved')">Reject</button>
+    </td>
+</tr>`;
         fetch(scriptURL + "?action=getPending&dept=" + encodeURIComponent(myDept))
             .then(res => res.json()).then(data => {
                 document.getElementById('loading').style.display = 'none';
@@ -56,4 +68,5 @@
     loadRequests();
 </script>
 </body>
+
 </html>
