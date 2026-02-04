@@ -3,19 +3,24 @@
 <head>
     <title>Manager Portal</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .card { background: white; padding: 20px; border-radius: 8px; max-width: 700px; margin: auto; }
-        h2 { color: #008081; border-bottom: 2px solid #008081; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-        .btn { padding: 8px; border: none; border-radius: 4px; color: white; cursor: pointer; font-weight: bold; }
+        body { font-family: sans-serif; background: #f0f2f2; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; max-width: 600px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header { display: flex; align-items: center; border-bottom: 2px solid #008081; padding-bottom: 10px; margin-bottom: 20px; }
+        .logo { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; }
+        h2 { color: #008081; margin: 0; font-size: 1.2rem; }
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; }
         .btn-ok { background: #28a745; margin-right: 5px; }
         .btn-no { background: #dc3545; }
     </style>
 </head>
 <body>
 <div class="card">
-    <h2>Manager Portal: <span id="deptName"></span></h2>
+    <div class="header">
+        <img src="https://i.imgur.com/zYNsJoa.jpeg" alt="Logo" class="logo">
+        <h2>Manager View: <span id="deptTitle"></span></h2>
+    </div>
     <div id="list">Loading...</div>
 </div>
 
@@ -23,22 +28,24 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyeSTQhQ733OekwBLvJTE0iwsFPwl4PE8_2sOmOPtdxHj4y11k4RLljfW5nW53Ol9RW7A/exec';
     const params = new URLSearchParams(window.location.search);
     const myDept = params.get('dept');
-    document.getElementById('deptName').innerText = myDept;
+    document.getElementById('deptTitle').innerText = myDept || "All Departments";
 
     function load() {
         fetch(scriptURL + "?action=getPending&dept=" + myDept).then(r => r.json()).then(data => {
-            let html = '<table><tr><th>Name</th><th>Info</th><th>Action</th></tr>';
+            if(!data.length) { document.getElementById('list').innerHTML = "<p>No pending requests.</p>"; return; }
+            let html = '<table>';
             data.forEach(r => {
-                html += `<tr><td>${r.name}</td><td><b>${r.type}</b><br>${r.dates}</td>
+                html += `<tr><td><strong>${r.name}</strong><br><small>${r.type}</small></td>
+                <td>${r.dates}</td>
                 <td><button class="btn btn-ok" onclick="update(${r.row},'Approved')">Approve</button>
                 <button class="btn btn-no" onclick="update(${r.row},'Disapproved')">Reject</button></td></tr>`;
             });
-            document.getElementById('list').innerHTML = data.length ? html + '</table>' : 'No pending requests.';
+            document.getElementById('list').innerHTML = html + '</table>';
         });
     }
 
     function update(row, status) {
-        const pin = prompt("Enter 4-digit PIN:");
+        const pin = prompt("Enter Manager PIN:");
         if (!pin) return;
         const fd = new FormData();
         fd.append('action', 'updateStatus'); fd.append('row', row); fd.append('status', status); fd.append('pin', pin); fd.append('dept', myDept);

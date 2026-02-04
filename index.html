@@ -1,30 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Luo City Spa Leave Form</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luo City Spa - Leave Form</title>
     <style>
         :root { --teal: #008081; }
-        body { font-family: sans-serif; background: #f0f2f2; padding: 15px; }
-        .box { background: white; padding: 25px; border-radius: 12px; max-width: 500px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { color: var(--teal); text-align: center; }
-        label { display: block; margin-top: 15px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; margin-top: 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-sub { background: var(--teal); color: white; }
-        .status-sec { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; }
+        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 450px; margin: auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { background: var(--teal); color: white; padding: 30px 20px; text-align: center; }
+        .logo { width: 80px; height: 80px; border-radius: 50%; background: white; margin-bottom: 15px; object-fit: cover; }
+        form { padding: 20px; }
+        label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-sub { width: 100%; padding: 15px; margin-top: 25px; border: none; border-radius: 8px; background: var(--teal); color: white; font-weight: bold; cursor: pointer; }
+        .status-sec { padding: 20px; border-top: 1px solid #eee; text-align: center; background: #fafafa; }
     </style>
 </head>
 <body>
-<div class="box">
-    <h2>LUO CITY SPA</h2>
+<div class="container">
+    <div class="header">
+        <img src="https://i.imgur.com/zYNsJoa.jpeg" alt="Luo City Spa" class="logo">
+        <h2 style="margin:0;">LUO CITY SPA</h2>
+        <p style="margin:5px 0 0;">Leave Application System</p>
+    </div>
+
     <form id="leaveForm">
-        <label>Name 姓名</label>
+        <label>Full Name 姓名</label>
         <input type="text" name="name" required>
-        
-        <label>Dept 部门</label>
+
+        <label>Department 部门</label>
         <select name="position" required>
-            <option value="">-- Select --</option>
+            <option value="">-- Select Dept --</option>
             <option value="Operations">Operations (Cisco)</option>
             <option value="Wellness">Wellness (Mike/Abby)</option>
             <option value="Purchasing">Purchasing (Samuel)</option>
@@ -39,26 +46,26 @@
 
         <label>Leave Type 类型</label>
         <select name="leaveType" required>
-            <option value="Paid Leave">Paid Leave</option>
-            <option value="Unpaid Leave">Unpaid Leave</option>
-            <option value="Paid Sick Leave">Paid Sick Leave</option>
-            <option value="Unpaid Sick Leave">Unpaid Sick Leave</option>
-            <option value="Maternity Leave">Maternity Leave</option>
-            <option value="Paternity Leave">Paternity Leave</option>
-            <option value="Others">Others</option>
+            <option value="Paid Leave">Paid Leave (有薪假)</option>
+            <option value="Unpaid Leave">Unpaid Leave (无薪假)</option>
+            <option value="Paid Sick Leave">Paid Sick Leave (有薪病假)</option>
+            <option value="Unpaid Sick Leave">Unpaid Sick Leave (无薪病假)</option>
+            <option value="Maternity Leave">Maternity Leave (产假)</option>
+            <option value="Paternity Leave">Paternity Leave (陪产假)</option>
+            <option value="Others">Others (其他)</option>
         </select>
 
-        <label>Dates & Reason</label>
-        <input type="text" name="leaveDates" placeholder="Jan 1-3" required>
-        <textarea name="reason" placeholder="Reason..."></textarea>
-        <button type="submit" class="btn-sub" id="sub">Submit Application</button>
+        <label>Dates & Reason 日期与理由</label>
+        <input type="text" name="leaveDates" placeholder="e.g. Feb 10-12" required>
+        <textarea name="reason" rows="2" placeholder="Reason..."></textarea>
+        
+        <button type="submit" class="btn-sub" id="subBtn">Submit Application</button>
     </form>
 
     <div class="status-sec">
-        <h3>Check Status</h3>
-        <input type="text" id="chkName" placeholder="Enter name">
-        <button onclick="checkStatus()" style="background:#333; color:white;">Check</button>
-        <p id="res"></p>
+        <input type="text" id="chkName" placeholder="Enter your name to check status" style="width:70%;">
+        <button onclick="checkStatus()" style="padding: 10px; border-radius: 8px; border:none; background:#333; color:white;">Check</button>
+        <p id="res" style="font-weight:bold; margin-top:10px; color:var(--teal);"></p>
     </div>
 </div>
 
@@ -68,9 +75,9 @@
 
     form.addEventListener('submit', e => {
         e.preventDefault();
-        document.getElementById('sub').innerText = "Sending...";
+        document.getElementById('subBtn').innerText = "Sending...";
         fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-            .then(() => { alert("Sent!"); form.reset(); document.getElementById('sub').innerText = "Submit Application"; });
+            .then(() => { alert("Application Submitted!"); form.reset(); document.getElementById('subBtn').innerText = "Submit Application"; });
     });
 
     function checkStatus() {
