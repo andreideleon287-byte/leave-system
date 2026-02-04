@@ -8,54 +8,55 @@
     
     <style>
         :root { --spa-teal: #008081; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #555; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
-        /* Form Styling */
+        /* The Paper Form Container */
         #form-to-print {
             background: white;
             width: 8.5in;
             padding: 0.5in;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            border: 1px solid #ccc;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border: 1px solid #333;
             box-sizing: border-box;
         }
 
         .header { text-align: center; color: var(--spa-teal); border-bottom: 3px solid var(--spa-teal); margin-bottom: 20px; padding-bottom: 10px; }
-        .header h1 { margin: 0; font-size: 28px; font-weight: bold; }
-        .header h2 { margin: 5px 0; font-size: 18px; text-transform: uppercase; }
+        .header h1 { margin: 0; font-size: 26px; font-weight: bold; }
+        .header h2 { margin: 5px 0; font-size: 16px; }
 
         .form-row { display: flex; border: 1px solid #000; border-bottom: none; }
-        .form-item { flex: 1; padding: 10px; border-right: 1px solid #000; }
+        .form-item { flex: 1; padding: 8px; border-right: 1px solid #000; }
         .form-item:last-child { border-right: none; }
 
-        label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #333; }
-        input[type="text"], input[type="date"] {
-            width: 100%; border: none; outline: none; font-size: 14px; background: transparent; padding: 2px 0;
+        label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #000; }
+        input[type="text"], input[type="date"], select, textarea {
+            width: 100%; border: none; outline: none; font-size: 14px; background: transparent; font-family: inherit;
         }
 
         .leave-type-section { border: 1px solid #000; border-bottom: none; padding: 10px; }
         .leave-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
         .checkbox-item { display: flex; align-items: center; font-size: 13px; }
-        .checkbox-item input { margin-right: 8px; transform: scale(1.2); }
 
-        .reason-box { border: 1px solid #000; height: 120px; padding: 10px; }
-        textarea { width: 100%; height: 80px; border: none; outline: none; resize: none; font-family: inherit; font-size: 14px; }
-
-        .approval-section { display: flex; border: 1px solid #000; border-top: none; height: 140px; }
+        .reason-box { border: 1px solid #000; height: 100px; padding: 10px; }
+        .approval-section { display: flex; border: 1px solid #000; border-top: none; height: 120px; }
         .sig-box { flex: 1; padding: 10px; border-right: 1px solid #000; display: flex; flex-direction: column; justify-content: space-between; }
         
-        .hr-section { background: var(--spa-teal); color: white; text-align: center; font-weight: bold; padding: 5px; font-size: 14px; margin-top: -1px; border: 1px solid #000; }
+        .hr-section { background: var(--spa-teal); color: white; text-align: center; font-weight: bold; padding: 5px; border: 1px solid #000; margin-top: -1px;}
         .hr-table { width: 100%; border-collapse: collapse; margin-top: -1px; }
-        .hr-table td { border: 1px solid #000; padding: 15px 10px; width: 25%; font-size: 11px; font-weight: bold; }
+        .hr-table td { border: 1px solid #000; padding: 12px; font-size: 10px; font-weight: bold; }
 
-        /* Button Styling */
-        .controls { margin-top: 30px; display: flex; gap: 15px; }
-        .btn { padding: 12px 25px; border: none; cursor: pointer; color: white; font-weight: bold; border-radius: 4px; transition: 0.3s; }
-        .btn-pdf { background: #d9534f; }
-        .btn-submit { background: #008081; }
-        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
+        /* Buttons & Tracker UI */
+        .controls { margin-top: 20px; display: flex; gap: 10px; }
+        .btn { padding: 12px 20px; border: none; cursor: pointer; color: white; font-weight: bold; border-radius: 4px; }
+        .btn-pdf { background: #666; }
+        .btn-submit { background: var(--spa-teal); }
+        
+        .status-checker { 
+            margin-top: 40px; background: #fff; padding: 20px; border-radius: 8px; 
+            width: 8.5in; border: 1px dashed var(--spa-teal); text-align: center; box-sizing: border-box;
+        }
 
-        @media print { .controls { display: none; } }
+        @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
@@ -70,7 +71,7 @@
         <div class="form-row">
             <div class="form-item">
                 <label>Name/Employee No 员工姓名/员工号:</label>
-                <input type="text" name="name" required>
+                <input type="text" name="name" placeholder="Type here..." required>
             </div>
             <div class="form-item">
                 <label>Date Filed 申请日期:</label>
@@ -81,18 +82,24 @@
         <div class="form-row">
             <div class="form-item">
                 <label>Position/Dept 职位/部门:</label>
-                <input type="text" name="position">
+                <select name="position" required>
+                    <option value="">-- Select Dept --</option>
+                    <option value="Front Desk">Front Desk 前台</option>
+                    <option value="Massage Therapy">Massage Therapy 按摩师</option>
+                    <option value="Maintenance">Maintenance 维修</option>
+                    <option value="Admin">Admin 行政</option>
+                </select>
             </div>
             <div class="form-item">
-                <label>Manager 经理:</label>
-                <input type="text" name="manager">
+                <label>Immediate Manager 经理:</label>
+                <input type="text" name="manager" placeholder="Manager Name">
             </div>
         </div>
 
         <div class="leave-type-section">
             <label>Leave Type 假期种类:</label>
             <div class="leave-grid">
-                <div class="checkbox-item"><input type="radio" name="leaveType" value="Vacation"> Vacation Leave 年假</div>
+                <div class="checkbox-item"><input type="radio" name="leaveType" value="Vacation" required> Vacation Leave 年假</div>
                 <div class="checkbox-item"><input type="radio" name="leaveType" value="Others"> Others 其他</div>
                 <div class="checkbox-item"><input type="radio" name="leaveType" value="Maternity"> Maternity Leave 产假</div>
                 <div class="checkbox-item"><input type="radio" name="leaveType" value="Paternity"> Paternity Leave 陪产假</div>
@@ -103,29 +110,29 @@
         <div class="form-row">
             <div class="form-item" style="flex: 2;">
                 <label>Leave date/s 请假日期:</label>
-                <input type="text" name="leaveDates" placeholder="e.g., Oct 10 - Oct 12" required>
+                <input type="text" name="leaveDates" placeholder="e.g. Feb 10 - Feb 12" required>
             </div>
             <div class="form-item">
                 <label>No. of Days 请假天数:</label>
-                <input type="text" name="numDays" required>
+                <input type="text" name="numDays" placeholder="0" required>
             </div>
         </div>
 
         <div class="reason-box">
             <label>Reason 请假理由:</label>
-            <textarea name="reason"></textarea>
+            <textarea name="reason" placeholder="Details..."></textarea>
         </div>
 
         <div class="approval-section">
             <div class="sig-box">
                 <div>
-                    <label><input type="checkbox"> APPROVED 批准</label>
-                    <label><input type="checkbox"> DISAPPROVED 不批准</label>
+                    <label><input type="checkbox" disabled> APPROVED 批准</label>
+                    <label><input type="checkbox" disabled> DISAPPROVED 不批准</label>
                 </div>
                 <label>Requestor's signature 申请人签名:</label>
             </div>
             <div class="sig-box" style="border-right: none;">
-                <div style="height: 50px;"></div>
+                <div style="height: 40px;"></div>
                 <label>Approver's signature 批准人签名:</label>
             </div>
         </div>
@@ -140,20 +147,50 @@
             </tr>
         </table>
     </div>
-
-    <div class="controls">
+    <div class="controls no-print">
         <button type="button" class="btn btn-pdf" onclick="generatePDF()">Download PDF</button>
-        <button type="submit" class="btn btn-submit">Submit to System</button>
+        <button type="submit" id="submitBtn" class="btn btn-submit">Submit to System</button>
     </div>
 </form>
 
+<div class="status-checker no-print">
+    <h3>Check Leave Status 检查状态</h3>
+    <input type="text" id="searchName" placeholder="Enter your full name" style="padding: 10px; width: 200px; border: 1px solid #ccc; border-radius: 4px;">
+    <button type="button" onclick="checkStatus()" style="padding: 10px 20px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">Check Status</button>
+    <p id="statusResult" style="margin-top: 15px; font-weight: bold; color: var(--spa-teal); font-size: 18px;"></p>
+</div>
+
 <script>
-    // 1. PDF GENERATION
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxaOixPIrjgOZSbNHX9GmV3uJKTaYVV2fGQN3hKVcdcF08AfFllmyEVX3J-V-_WvPBerQ/exec'; // <--- REPLACE THIS WITH YOUR LINK
+    const form = document.getElementById('leaveForm');
+
+    // Submit Function
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = "Submitting...";
+
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+            .then(response => {
+                alert('Success! Your request has been sent to your manager.');
+                btn.disabled = false;
+                btn.innerHTML = "Submit to System";
+                form.reset();
+            })
+            .catch(error => {
+                alert('Error! Please check your internet connection.');
+                btn.disabled = false;
+                btn.innerHTML = "Submit to System";
+            });
+    });
+
+    // PDF Generation Function
     function generatePDF() {
         const element = document.getElementById('form-to-print');
         const opt = {
-            margin: 0,
-            filename: 'LuoCitySpa_LeaveForm.pdf',
+            margin: 0.2,
+            filename: 'Leave_Form.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
@@ -161,29 +198,19 @@
         html2pdf().set(opt).from(element).save();
     }
 
-    // 2. GOOGLE SHEETS SUBMISSION
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxUI8D7qDN-gnIDTcTm_ezU6ErpWmCCGJOb7v5S_1QLVsFQ3kQH-FHh6SXtailxOgxw5A/exec'; // PASTE YOUR URL HERE
-    const form = document.getElementById('leaveForm');
-
-    form.addEventListener('submit', e => {
-        e.preventDefault();
-        const submitBtn = form.querySelector('.btn-submit');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = "Sending...";
-
-        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-            .then(response => {
-                alert('Success! Your leave request has been sent to Google Sheets.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = "Submit to System";
-            })
-            .catch(error => {
-                console.error('Error!', error.message);
-                alert('Submission failed. Check your Script URL.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = "Submit to System";
+    // Status Check Function
+    function checkStatus() {
+        const name = document.getElementById('searchName').value;
+        const resultP = document.getElementById('statusResult');
+        if(!name) return alert("Please enter your name");
+        
+        resultP.innerHTML = "Searching...";
+        fetch(scriptURL + "?name=" + encodeURIComponent(name))
+            .then(res => res.text())
+            .then(status => {
+                resultP.innerHTML = (status === "Not Found") ? "No record found." : "Current Status: " + status;
             });
-    });
+    }
 </script>
 
 </body>
