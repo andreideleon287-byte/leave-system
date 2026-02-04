@@ -1,104 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Luo City Spa - Manager Portal</title>
+    <title>Manager Portal</title>
     <style>
-        :root { --spa-teal: #008081; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        h2 { color: var(--spa-teal); border-bottom: 3px solid var(--spa-teal); padding-bottom: 10px; margin-top: 0; }
-        .dept-badge { background: var(--spa-teal); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 25px; background: white; }
-        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #f8f9fa; color: #333; font-weight: 600; }
-        .btn { padding: 8px 16px; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; transition: 0.2s; }
-        .btn-approve { background: #28a745; color: white; margin-right: 8px; }
-        .btn-reject { background: #dc3545; color: white; }
-        .btn:hover { opacity: 0.8; transform: scale(1.05); }
-        .loading { text-align: center; padding: 40px; color: #666; font-style: italic; }
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { color: #008081; border-bottom: 2px solid #008081; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        .btn { padding: 8px 12px; border: none; cursor: pointer; border-radius: 4px; color: white; font-weight: bold; }
+        .btn-approve { background: #28a745; margin-right: 5px; }
+        .btn-reject { background: #dc3545; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h2>Manager Approval Portal <span class="dept-badge" id="mgrDept">Loading Dept...</span></h2>
-    
-    <div id="loading" class="loading">Fetching pending leave requests...</div>
-    
+    <h2>Manager Portal: <span id="mgrDept"></span></h2>
+    <div id="loading">Loading...</div>
     <table id="requestTable" style="display:none;">
-        <thead>
-            <tr>
-                <th>Employee 员工</th>
-                <th>Dates 日期</th>
-                <th>Reason 理由</th>
-                <th>Actions 操作</th>
-            </tr>
-        </thead>
+        <thead><tr><th>Employee</th><th>Dates</th><th>Reason</th><th>Action</th></tr></thead>
         <tbody id="tableBody"></tbody>
     </table>
 </div>
-
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxaOixPIrjgOZSbNHX9GmV3uJKTaYVV2fGQN3hKVcdcF08AfFllmyEVX3J-V-_WvPBerQ/exec'; 
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyfMmmES2xTiMAOIu7OCtlI3NqxMvV82_d143pMCJ620QM_gc4V2C7nhdI9x9iANXEL9A/exec';
     const urlParams = new URLSearchParams(window.location.search);
     const myDept = urlParams.get('dept');
-    
-    document.getElementById('mgrDept').innerText = myDept || "All Departments";
+    document.getElementById('mgrDept').innerText = myDept || "All";
 
     function loadRequests() {
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('requestTable').style.display = 'none';
-
         fetch(scriptURL + "?action=getPending&dept=" + encodeURIComponent(myDept))
-            .then(res => res.json())
-            .then(data => {
+            .then(res => res.json()).then(data => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('requestTable').style.display = data.length ? 'table' : 'none';
                 const tbody = document.getElementById('tableBody');
                 tbody.innerHTML = '';
-                document.getElementById('loading').style.display = 'none';
-                
-                if (data.length === 0) {
-                    document.getElementById('loading').innerHTML = "No pending requests for your department. 🎉";
-                    document.getElementById('loading').style.display = 'block';
-                    return;
-                }
-
-                document.getElementById('requestTable').style.display = 'table';
                 data.forEach(req => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong>${req.name}</strong><br><small>${req.dateFiled}</small></td>
-                            <td>${req.leaveDates}<br><small>${req.numDays} Day(s)</small></td>
-                            <td>${req.reason}</td>
-                            <td>
-                                <button class="btn btn-approve" onclick="updateStatus(${req.row}, 'Approved')">Approve</button>
-                                <button class="btn btn-reject" onclick="updateStatus(${req.row}, 'Disapproved')">Reject</button>
-                            </td>
-                        </tr>
-                    `;
+                    tbody.innerHTML += `<tr><td>${req.name}</td><td>${req.leaveDates}</td><td>${req.reason}</td>
+                        <td><button class="btn btn-approve" onclick="updateStatus(${req.row}, 'Approved')">Approve</button>
+                        <button class="btn btn-reject" onclick="updateStatus(${req.row}, 'Disapproved')">Reject</button></td></tr>`;
                 });
             });
     }
 
-    function updateStatus(row, newStatus) {
-        if(!confirm("Are you sure you want to " + newStatus + " this request?")) return;
-        
-        const btn = event.target;
-        btn.innerText = "...";
-        btn.disabled = true;
-
-        const formData = new FormData();
-        formData.append('action', 'updateStatus');
-        formData.append('row', row);
-        formData.append('status', newStatus);
-
-        fetch(scriptURL, { method: 'POST', body: formData })
-            .then(() => {
-                alert("Request " + newStatus);
-                loadRequests();
-            })
-            .catch(err => alert("Error updating status."));
+    function updateStatus(row, status) {
+        const pin = prompt("Enter your 4-digit PIN:");
+        if (!pin) return;
+        const fd = new FormData();
+        fd.append('action', 'updateStatus'); fd.append('row', row); fd.append('status', status); fd.append('pin', pin); fd.append('dept', myDept);
+        fetch(scriptURL, { method: 'POST', body: fd }).then(res => res.text()).then(res => {
+            alert(res === "Success" ? "Updated!" : "Error: " + res);
+            loadRequests();
+        });
     }
-
     loadRequests();
 </script>
 </body>
