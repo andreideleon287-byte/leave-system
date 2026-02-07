@@ -1,55 +1,141 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luo City Spa | Employee Portal</title>
     <style>
-        :root { --forest: #228B22; }
-        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
-        .card { max-width: 400px; margin: auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        :root { --forest: #228B22; --cream: #f4f7f6; --dark: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--cream); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        
+        .container { background: white; width: 100%; max-width: 450px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
         .header { background: var(--forest); color: white; text-align: center; padding: 30px; }
-        .p-20 { padding: 20px; }
-        input, select, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn-green { background: var(--forest); color: white; border: none; font-weight: bold; cursor: pointer; }
-        #leaveForm { display: none; }
+        .header img { width: 80px; margin-bottom: 10px; border-radius: 50%; }
+        
+        /* Verification Box */
+        #loginBox { padding: 40px 25px; text-align: center; }
+        
+        /* Form Box (Hidden initially) */
+        #formBox { display: none; padding: 25px; }
+        
+        label { display: block; margin-top: 15px; font-weight: bold; color: var(--dark); font-size: 14px; }
+        input, select, textarea { 
+            width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; 
+            border-radius: 8px; box-sizing: border-box; font-size: 16px; 
+        }
+        
+        button { 
+            width: 100%; padding: 15px; margin-top: 20px; border: none; border-radius: 8px; 
+            font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px;
+        }
+        .btn-verify { background: var(--dark); color: white; }
+        .btn-submit { background: var(--forest); color: white; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .error { color: #d32f2f; font-size: 13px; margin-top: 10px; font-weight: bold; }
+        .success-msg { text-align: center; color: var(--forest); padding: 40px 20px; display: none; }
     </style>
 </head>
 <body>
-<div class="card">
-    <div class="header"><h2>LUO CITY SPA</h2><p>Staff Portal</p></div>
-    
-    <div class="p-20" id="loginBox">
-        <label>Employee ID</label>
-        <input type="text" id="empId" placeholder="Enter ID">
-        <button class="btn-green" onclick="login()">Enter System</button>
+
+<div class="container">
+    <div class="header">
+        <h2 style="margin:0;">LUO CITY SPA</h2>
+        <p style="margin:5px 0 0; opacity: 0.9;">Employee Leave Portal</p>
     </div>
 
-    <form id="leaveForm" class="p-20">
-        <input type="text" name="name" placeholder="Full Name" required>
-        <select name="position" required>
-            <option value="Operations">Operations</option>
-            <option value="Wellness">Wellness</option>
-            <option value="HR">HR</option>
-        </select>
-        <input type="text" name="leaveDates" placeholder="Dates (e.g. Feb 20-22)" required>
-        <button type="submit" class="btn-green" id="subBtn">Submit Leave</button>
-    </form>
+    <div id="loginBox">
+        <label>Enter Employee ID to Access</label>
+        <input type="text" id="empIdInput" placeholder="e.g. LCS-101">
+        <button class="btn-verify" id="verifyBtn" onclick="verifyEmployee()">Verify Access</button>
+        <p id="loginError" class="error"></p>
+    </div>
+
+    <div id="formBox">
+        <form id="leaveForm">
+            <label>Full Name</label>
+            <input type="text" name="name" required placeholder="As per payroll">
+
+            <label>Department</label>
+            <select name="dept" required>
+                <option value="">Select Department</option>
+                <option value="Operations">Operations</option>
+                <option value="Wellness">Wellness</option>
+                <option value="Admin">Admin/HR</option>
+                <option value="Warehouse">Warehouse</option>
+            </select>
+
+            <label>Leave Type</label>
+            <select name="leaveType" required>
+                <option value="Paid">Paid Leave</option>
+                <option value="Unpaid">Unpaid Leave</option>
+                <option value="Sick">Sick Leave</option>
+                <option value="Emergency">Emergency</option>
+            </select>
+
+            <label>Dates Requested</label>
+            <input type="text" name="leaveDates" required placeholder="e.g. March 10 - March 15">
+
+            <label>Reason for Leave</label>
+            <textarea name="reason" rows="3" required placeholder="Briefly explain..."></textarea>
+
+            <button type="submit" class="btn-submit" id="submitBtn">Submit Application</button>
+        </form>
+    </div>
+
+    <div id="successArea" class="success-msg">
+        <h2 style="font-size: 40px;">✅</h2>
+        <h3>Submission Successful!</h3>
+        <p>Your request has been sent to your manager for approval.</p>
+        <button onclick="location.reload()" style="background:none; color:var(--forest); border:1px solid var(--forest);">Apply for another</button>
+    </div>
 </div>
 
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbyeSTQhQ733OekwBLvJTE0iwsFPwl4PE8_2sOmOPtdxHj4y11k4RLljfW5nW53Ol9RW7A/exec';
-    function login() {
-        fetch(url + "?action=verifyEmployee&empId=" + document.getElementById('empId').value)
-        .then(r => r.text()).then(res => {
-            if(res === "Valid") {
-                document.getElementById('loginBox').style.display = 'none';
-                document.getElementById('leaveForm').style.display = 'block';
-            } else { alert("ID Not Recognized"); }
-        });
+    // --- IMPORTANT: Update this with your actual Google Script Web App URL ---
+    const scriptURL = 'YOUR_APPS_SCRIPT_URL_HERE';
+
+    // 1. VERIFY EMPLOYEE ID
+    function verifyEmployee() {
+        const id = document.getElementById('empIdInput').value;
+        const btn = document.getElementById('verifyBtn');
+        const err = document.getElementById('loginError');
+
+        if(!id) { err.innerText = "Please enter your ID"; return; }
+
+        btn.innerText = "Checking...";
+        btn.disabled = true;
+
+        fetch(scriptURL + "?action=verifyEmployee&empId=" + encodeURIComponent(id))
+            .then(r => r.text())
+            .then(res => {
+                if(res === "Valid") {
+                    document.getElementById('loginBox').style.display = 'none';
+                    document.getElementById('formBox').style.display = 'block';
+                } else {
+                    err.innerText = "Invalid ID. Please check with HR.";
+                    btn.innerText = "Verify Access";
+                    btn.disabled = false;
+                }
+            })
+            .catch(() => {
+                err.innerText = "Connection error. Try again.";
+                btn.disabled = false;
+            });
     }
-    document.getElementById('leaveForm').onsubmit = e => {
+
+    // 2. SUBMIT FORM DATA
+    const form = document.getElementById('leaveForm');
+    form.onsubmit = e => {
         e.preventDefault();
-        fetch(url, { method: 'POST', body: new FormData(e.target) }).then(() => alert("Submitted!"));
-    }
-</script>
-</body>
-</html>
+        const subBtn = document.getElementById('submitBtn');
+        subBtn.innerText = "Submitting...";
+        subBtn.disabled = true;
+
+        fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+            .then(res => {
+                document.getElementById('formBox').style.display = 'none';
+                document.getElementById('successArea').style.display = 'block';
+            })
+            .catch(err => {
+                alert("Error submitting! Check
