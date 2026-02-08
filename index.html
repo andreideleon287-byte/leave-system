@@ -6,14 +6,14 @@
     <title>Luo City Spa - Leave Form</title>
     <style>
         :root { --teal: #008081; }
-        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 10px; }
         .container { max-width: 450px; margin: auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .header { background: var(--teal); color: white; padding: 30px 20px; text-align: center; }
-        .logo { width: 80px; height: 80px; border-radius: 50%; background: white; margin-bottom: 15px; object-fit: cover; }
+        .header { background: var(--teal); color: white; padding: 20px; text-align: center; }
+        .logo { width: 60px; height: 60px; border-radius: 50%; background: white; margin-bottom: 10px; }
         form { padding: 20px; }
-        label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
+        label { display: block; margin-top: 12px; font-weight: bold; font-size: 13px; }
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-sub { width: 100%; padding: 15px; margin-top: 25px; border: none; border-radius: 8px; background: var(--teal); color: white; font-weight: bold; cursor: pointer; }
+        .btn-sub { width: 100%; padding: 15px; margin-top: 20px; border: none; border-radius: 8px; background: var(--teal); color: white; font-weight: bold; cursor: pointer; }
         .status-sec { padding: 20px; border-top: 1px solid #eee; text-align: center; background: #fafafa; }
     </style>
 </head>
@@ -21,17 +21,16 @@
 <div class="container">
     <div class="header">
         <img src="https://i.imgur.com/zYNsJoa.jpeg" alt="Luo City Spa" class="logo">
-        <h2 style="margin:0;">LUO CITY SPA</h2>
-        <p style="margin:5px 0 0;">Leave Application System</p>
+        <h2 style="margin:0; font-size: 1.2rem;">LUO CITY SPA</h2>
     </div>
 
     <form id="leaveForm">
         <label>Full Name 姓名</label>
-        <input type="text" name="name" required>
+        <input type="text" name="name" id="empName" required placeholder="Enter your registered name">
 
-        <label>Department 部门</label>
-        <select name="position" required>
-            <option value="">-- Select Dept --</option>
+        <label>Department 部门 (Auto-filled)</label>
+        <select name="position" id="deptSelect" required>
+            <option value="">-- Auto-detecting... --</option>
             <option value="Operations">Operations (Cisco)</option>
             <option value="Wellness">Wellness (Mike/Abby)</option>
             <option value="Purchasing">Purchasing (Samuel)</option>
@@ -49,43 +48,71 @@
             <option value="Paid Leave">Paid Leave (有薪假)</option>
             <option value="Unpaid Leave">Unpaid Leave (无薪假)</option>
             <option value="Paid Sick Leave">Paid Sick Leave (有薪病假)</option>
-            <option value="Unpaid Sick Leave">Unpaid Sick Leave (无薪病假)</option>
-            <option value="Maternity Leave">Maternity Leave (产假)</option>
-            <option value="Paternity Leave">Paternity Leave (陪产假)</option>
-            <option value="Others">Others (其他)</option>
         </select>
 
-        <label>Dates & Reason 日期与理由</label>
+        <label>Dates 日期</label>
         <input type="text" name="leaveDates" placeholder="e.g. Feb 10-12" required>
-        <textarea name="reason" rows="2" placeholder="Reason..."></textarea>
+        
+        <label>Reason 理由</label>
+        <textarea name="reason" rows="2"></textarea>
         
         <button type="submit" class="btn-sub" id="subBtn">Submit Application</button>
     </form>
 
     <div class="status-sec">
-        <input type="text" id="chkName" placeholder="Enter your name to check status" style="width:70%;">
-        <button onclick="checkStatus()" style="padding: 10px; border-radius: 8px; border:none; background:#333; color:white;">Check</button>
+        <input type="text" id="chkName" placeholder="Check your status" style="width:65%;">
+        <button onclick="checkStatus()" style="padding: 10px; border-radius: 8px; background:#333; color:white; border:none;">Check</button>
         <p id="res" style="font-weight:bold; margin-top:10px; color:var(--teal);"></p>
     </div>
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbw8BedNHI4JjeXKxvIAI3_6TvBNM3bF4rrIb1v-UvTM_uWLR3fNBMXZl3fTCy-sm37HaQ/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzS427LsNsLbQ1WxIpjt-ThQyPsXPVUBKhZrOhMJMoM68IW20yXEgNlZO_USIsWvWJ8xQ/exec';
     const form = document.getElementById('leaveForm');
+    const nameInput = document.getElementById('empName');
+    const deptSelect = document.getElementById('deptSelect');
+
+    // AUTO-FILL LOGIC
+    nameInput.addEventListener('blur', () => {
+        const val = nameInput.value.trim();
+        if(val.length < 2) return;
+        fetch(`${scriptURL}?action=verifyEmployee&empId=${encodeURIComponent(val)}`)
+            .then(r => r.json())
+            .then(data => {
+                if(data.result === "Valid") {
+                    deptSelect.value = data.dept;
+                    nameInput.style.borderColor = "var(--teal)";
+                } else {
+                    nameInput.style.borderColor = "red";
+                }
+            });
+    });
 
     form.addEventListener('submit', e => {
         e.preventDefault();
-        document.getElementById('subBtn').innerText = "Sending...";
-        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-            .then(() => { alert("Application Submitted!"); form.reset(); document.getElementById('subBtn').innerText = "Submit Application"; });
+        const btn = document.getElementById('subBtn');
+        btn.innerText = "Verifying...";
+        btn.disabled = true;
+
+        fetch(`${scriptURL}?action=verifyEmployee&empId=${encodeURIComponent(nameInput.value)}`)
+            .then(r => r.json())
+            .then(data => {
+                if(data.result === "Valid") {
+                    btn.innerText = "Submitting...";
+                    return fetch(scriptURL, { method: 'POST', body: new FormData(form)});
+                } else {
+                    alert("❌ Name not registered in Admin Dashboard!");
+                    btn.disabled = false;
+                    btn.innerText = "Submit Application";
+                }
+            })
+            .then(res => { if(res) { alert("✅ Submitted!"); location.reload(); }});
     });
 
     function checkStatus() {
-        const name = document.getElementById('chkName').value;
-        fetch(scriptURL + "?name=" + name).then(r => r.text()).then(t => document.getElementById('res').innerText = "Status: " + t);
+        const n = document.getElementById('chkName').value;
+        fetch(`${scriptURL}?name=${n}`).then(r => r.text()).then(t => document.getElementById('res').innerText = "Status: " + t);
     }
 </script>
 </body>
-
 </html>
-
