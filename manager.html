@@ -1,61 +1,83 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Manager Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCS | Manager Approval</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f2; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; max-width: 600px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .header { display: flex; align-items: center; border-bottom: 2px solid #008081; padding-bottom: 10px; margin-bottom: 20px; }
-        .logo { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; }
-        h2 { color: #008081; margin: 0; font-size: 1.2rem; }
-        table { width: 100%; border-collapse: collapse; }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
-        .btn { padding: 8px 12px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; }
-        .btn-ok { background: #28a745; margin-right: 5px; }
-        .btn-no { background: #dc3545; }
+        :root { --forest: #228B22; --pending: #ff9800; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 15px; }
+        .card { max-width: 500px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: var(--forest); color: white; padding: 20px; text-align: center; }
+        .item { padding: 15px; border-bottom: 1px solid #eee; position: relative; }
+        .dept-tag { font-size: 11px; background: #eee; padding: 2px 6px; border-radius: 4px; color: #666; }
+        .btn-box { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .approve { background: var(--forest); color: white; }
+        .reject { background: #d32f2f; color: white; }
+        .loading { text-align: center; padding: 20px; color: #888; }
     </style>
 </head>
 <body>
+
 <div class="card">
     <div class="header">
-        <img src="https://i.imgur.com/zYNsJoa.jpeg" alt="Logo" class="logo">
-        <h2>Manager View: <span id="deptTitle"></span></h2>
+        <h2 id="title" style="margin:0;">Manager Portal</h2>
+        <small id="deptLabel">Loading Department...</small>
     </div>
-    <div id="list">Loading...</div>
+    <div id="list" class="loading">Fetching pending requests...</div>
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbx2WffnDhuzkJJZwiZ4G7wFfbkD6GeMoY947nToANGpaOLGzf8WqTMhKJKDWGYYIP5A1Q/exec';
+    const scriptURL = 'YOUR_APPS_SCRIPT_URL_HERE';
     const params = new URLSearchParams(window.location.search);
     const myDept = params.get('dept');
-    document.getElementById('deptTitle').innerText = myDept || "All Departments";
+
+    if (myDept) document.getElementById('deptLabel').innerText = myDept + " Department";
 
     function load() {
-        fetch(scriptURL + "?action=getPending&dept=" + myDept).then(r => r.json()).then(data => {
-            if(!data.length) { document.getElementById('list').innerHTML = "<p>No pending requests.</p>"; return; }
-            let html = '<table>';
-            data.forEach(r => {
-                html += `<tr><td><strong>${r.name}</strong><br><small>${r.type}</small></td>
-                <td>${r.dates}</td>
-                <td><button class="btn btn-ok" onclick="update(${r.row},'Approved')">Approve</button>
-                <button class="btn btn-no" onclick="update(${r.row},'Disapproved')">Reject</button></td></tr>`;
+        fetch(scriptURL + "?action=getPending&dept=" + encodeURIComponent(myDept))
+            .then(r => r.json())
+            .then(data => {
+                let html = '';
+                if (data.length === 0) {
+                    html = '<div class="loading">✅ No pending requests.</div>';
+                } else {
+                    data.forEach(r => {
+                        html += `
+                        <div class="item">
+                            <span class="dept-tag">${myDept || 'General'}</span>
+                            <div style="margin-top:5px;"><strong>${r.name}</strong></div>
+                            <div style="font-size:13px; color:#555;">${r.dates} (${r.type})</div>
+                            <div style="font-size:12px; color:#888; margin-top:5px;">Reason: ${r.reason}</div>
+                            <div class="btn-box">
+                                <button class="approve" onclick="action(${r.row}, 'Approved')">Approve</button>
+                                <button class="reject" onclick="action(${r.row}, 'Disapproved')">Reject</button>
+                            </div>
+                        </div>`;
+                    });
+                }
+                document.getElementById('list').innerHTML = html;
             });
-            document.getElementById('list').innerHTML = html + '</table>';
-        });
     }
 
-    function update(row, status) {
-        const pin = prompt("Enter Manager PIN:");
-        if (!pin) return;
-        const fd = new FormData();
-        fd.append('action', 'updateStatus'); fd.append('row', row); fd.append('status', status); fd.append('pin', pin); fd.append('dept', myDept);
-        fetch(scriptURL, { method: 'POST', body: fd }).then(r => r.text()).then(res => {
-            alert(res === "Success" ? "Done!" : "Error: " + res);
-            load();
-        });
+    function action(row, status) {
+        let pin = prompt("Enter Manager PIN to " + status + ":");
+        if (!pin) return; // Cancel if no PIN
+
+        let fd = new FormData();
+        fd.append('action', 'updateStatus');
+        fd.append('row', row);
+        fd.append('status', status);
+        fd.append('pin', pin);
+
+        fetch(scriptURL, { method: 'POST', body: fd })
+            .then(() => {
+                alert("Request " + status);
+                load();
+            });
     }
+
     load();
 </script>
 </body>
-
 </html>
