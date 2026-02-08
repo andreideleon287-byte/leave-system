@@ -3,75 +3,56 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        :root { --forest: #228B22; }
-        body { font-family: sans-serif; background: #eee; margin: 0; }
-        .login-overlay { position: fixed; inset: 0; background: var(--forest); display: flex; align-items: center; justify-content: center; z-index: 10; }
-        #adminContent { display: none; padding: 20px; max-width: 900px; margin: auto; }
-        .stat-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-        .stat-card { flex: 1; background: white; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid var(--forest); }
-        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        body { font-family: sans-serif; background: #eee; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; max-width: 600px; margin: auto; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ddd; }
+        .btn { width: 100%; padding: 12px; background: #008081; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        .list-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
-    <div id="login" class="login-overlay">
-        <div style="background:white; padding:30px; border-radius:12px; text-align:center;">
-            <h3>LCS Admin</h3>
-            <input type="password" id="pass" placeholder="Password">
-            <button onclick="login()" style="width:100%; padding:10px; margin-top:10px; background:var(--forest); color:white; border:none; border-radius:5px;">Enter</button>
-        </div>
+    <div class="card">
+        <h2>Admin Management</h2>
+        <p>Register new staff and assign departments.</p>
+        <input type="text" id="newName" placeholder="Full Name (Exactly as they will type)">
+        <select id="newDept">
+            <option value="Wellness">Wellness</option>
+            <option value="Operations">Operations</option>
+            <option value="HR">HR</option>
+            <option value="Warehouse">Warehouse</option>
+            <option value="Admin">Admin</option>
+        </select>
+        <button class="btn" onclick="addStaff()">Authorize Staff</button>
+        <hr>
+        <div id="logs">Loading logs...</div>
     </div>
 
-    <div id="adminContent">
-        <div class="stat-bar">
-            <div class="stat-card">Staff Count <h2 id="sStaff">0</h2></div>
-            <div class="stat-card">Leave Entries <h2 id="sTotal">0</h2></div>
-        </div>
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzS427LsNsLbQ1WxIpjt-ThQyPsXPVUBKhZrOhMJMoM68IW20yXEgNlZO_USIsWvWJ8xQ/exec';
+
+    function addStaff() {
+        let pin = prompt("Enter Master PIN:");
+        if(pin !== "9999") return alert("Wrong PIN");
         
-        <div style="background:white; padding:20px; margin-bottom:20px; border-radius:8px;">
-            <h4>Manage Staff IDs</h4>
-            <input type="text" id="sn" placeholder="Name"> 
-            <input type="text" id="si" placeholder="ID (e.g. LCS-101)">
-            <button onclick="addS()" style="background:var(--forest); color:white; padding:10px; border:none; border-radius:5px; margin-top:5px; width:100%;">Authorize New ID</button>
-        </div>
+        let fd = new FormData();
+        fd.append('action', 'addStaff');
+        fd.append('staffName', document.getElementById('newName').value);
+        fd.append('staffDept', document.getElementById('newDept').value);
+        fd.append('pin', pin);
 
-        <div id="tableData"></div>
-    </div>
+        fetch(scriptURL, { method: 'POST', body: fd }).then(() => {
+            alert("Staff Added to Database!");
+            location.reload();
+        });
+    }
 
-    <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbw8BedNHI4JjeXKxvIAI3_6TvBNM3bF4rrIb1v-UvTM_uWLR3fNBMXZl3fTCy-sm37HaQ/exec';
-        function login() {
-            if(document.getElementById('pass').value === "LuoCity2026") {
-                document.getElementById('login').style.display = 'none';
-                document.getElementById('adminContent').style.display = 'block';
-                load();
-            }
-        }
-        function load() {
-            fetch(scriptURL + "?action=getAllData").then(r => r.json()).then(data => {
-                let html = '<table><tr><th>Name</th><th>Status</th><th>Action</th></tr>';
-                data.reverse().forEach(r => {
-                    html += `<tr><td>${r.name}<br><small>${r.dates}</small></td><td>${r.status}</td><td><button onclick="delR(${r.row})">🗑️</button></td></tr>`;
-                });
-                document.getElementById('tableData').innerHTML = html + '</table>';
-                document.getElementById('sTotal').innerText = data.length;
-            });
-            fetch(scriptURL + "?action=getStaffList").then(r => r.json()).then(d => document.getElementById('sStaff').innerText = d.length);
-        }
-        function addS() {
-            let p = prompt("Master PIN:");
-            let fd = new FormData();
-            fd.append('action', 'addStaff'); fd.append('staffName', document.getElementById('sn').value);
-            fd.append('staffId', document.getElementById('si').value); fd.append('pin', p);
-            fetch(scriptURL, {method:'POST', body:fd}).then(() => { load(); });
-        }
-        function delR(row) {
-            let p = prompt("Master PIN:");
-            let fd = new FormData();
-            fd.append('action', 'deleteRow'); fd.append('row', row); fd.append('pin', p);
-            fetch(scriptURL, {method:'POST', body:fd}).then(() => load());
-        }
-    </script>
+    fetch(scriptURL + "?action=getAllData").then(r => r.json()).then(data => {
+        let html = '<h3>Recent Applications</h3>';
+        data.reverse().forEach(r => {
+            html += `<div class="list-item"><span>${r.name}</span><strong>${r.status}</strong></div>`;
+        });
+        document.getElementById('logs').innerHTML = html;
+    });
+</script>
 </body>
 </html>
-
