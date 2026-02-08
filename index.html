@@ -1,57 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luo City Spa - Leave Form</title>
     <style>
-        :root { --forest: #228B22; }
-        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
-        .card { max-width: 400px; margin: auto; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); padding: 25px; }
-        input, select, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn { background: var(--forest); color: white; border: none; font-weight: bold; cursor: pointer; }
-        #formArea { display: none; }
+        :root { --teal: #008081; }
+        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 450px; margin: auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { background: var(--teal); color: white; padding: 30px 20px; text-align: center; }
+        .logo { width: 80px; height: 80px; border-radius: 50%; background: white; margin-bottom: 15px; object-fit: cover; }
+        form { padding: 20px; }
+        label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-sub { width: 100%; padding: 15px; margin-top: 25px; border: none; border-radius: 8px; background: var(--teal); color: white; font-weight: bold; cursor: pointer; }
+        .status-sec { padding: 20px; border-top: 1px solid #eee; text-align: center; background: #fafafa; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2 style="color:var(--forest); text-align:center;">LCS Staff Portal</h2>
-        <div id="loginArea">
-            <input type="text" id="empId" placeholder="Employee ID (LCS-XXX)">
-            <button class="btn" onclick="verify()">Login</button>
-            <p id="msg" style="color:red; text-align:center; font-size:12px;"></p>
-        </div>
-        <div id="formArea">
-            <form id="leaveForm">
-                <input type="text" name="name" placeholder="Full Name" required>
-                <select name="dept" required>
-                    <option value="Wellness">Wellness</option>
-                    <option value="Operations">Operations</option>
-                    <option value="Admin">Admin</option>
-                </select>
-                <input type="text" name="leaveDates" placeholder="Dates (e.g. Feb 14-16)" required>
-                <input type="text" name="leaveType" placeholder="Paid/Unpaid/Sick">
-                <textarea name="reason" placeholder="Reason..." style="width:100%; margin-top:10px; height:60px;"></textarea>
-                <button type="submit" class="btn">Submit Request</button>
-            </form>
-        </div>
+<div class="container">
+    <div class="header">
+        <img src="https://i.imgur.com/zYNsJoa.jpeg" alt="Luo City Spa" class="logo">
+        <h2 style="margin:0;">LUO CITY SPA</h2>
+        <p style="margin:5px 0 0;">Leave Application System</p>
     </div>
-    <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbw8BedNHI4JjeXKxvIAI3_6TvBNM3bF4rrIb1v-UvTM_uWLR3fNBMXZl3fTCy-sm37HaQ/exec';
-        function verify() {
-            const id = document.getElementById('empId').value;
-            fetch(scriptURL + "?action=verifyEmployee&empId=" + id)
-                .then(r => r.text()).then(res => {
-                    if(res === "Valid") {
-                        document.getElementById('loginArea').style.display = 'none';
-                        document.getElementById('formArea').style.display = 'block';
-                    } else { document.getElementById('msg').innerText = "ID Not Authorized"; }
-                });
-        }
-        document.getElementById('leaveForm').onsubmit = e => {
-            e.preventDefault();
-            fetch(scriptURL, { method: 'POST', body: new FormData(e.target) })
-                .then(() => { alert("Application Sent!"); location.reload(); });
-        };
-    </script>
+
+    <form id="leaveForm">
+        <label>Full Name 姓名</label>
+        <input type="text" name="name" required>
+
+        <label>Department 部门</label>
+        <select name="position" required>
+            <option value="">-- Select Dept --</option>
+            <option value="Operations">Operations (Cisco)</option>
+            <option value="Wellness">Wellness (Mike/Abby)</option>
+            <option value="Purchasing">Purchasing (Samuel)</option>
+            <option value="Maintenance">Maintenance (Tank)</option>
+            <option value="Warehouse">Warehouse (Jack)</option>
+            <option value="Finance">Finance (Vita)</option>
+            <option value="IT">IT (Garry)</option>
+            <option value="HR">HR (Vic)</option>
+            <option value="Admin">Admin (Jack)</option>
+            <option value="Marketing">Marketing (Simon)</option>
+        </select>
+
+        <label>Leave Type 类型</label>
+        <select name="leaveType" required>
+            <option value="Paid Leave">Paid Leave (有薪假)</option>
+            <option value="Unpaid Leave">Unpaid Leave (无薪假)</option>
+            <option value="Paid Sick Leave">Paid Sick Leave (有薪病假)</option>
+            <option value="Unpaid Sick Leave">Unpaid Sick Leave (无薪病假)</option>
+            <option value="Maternity Leave">Maternity Leave (产假)</option>
+            <option value="Paternity Leave">Paternity Leave (陪产假)</option>
+            <option value="Others">Others (其他)</option>
+        </select>
+
+        <label>Dates & Reason 日期与理由</label>
+        <input type="text" name="leaveDates" placeholder="e.g. Feb 10-12" required>
+        <textarea name="reason" rows="2" placeholder="Reason..."></textarea>
+        
+        <button type="submit" class="btn-sub" id="subBtn">Submit Application</button>
+    </form>
+
+    <div class="status-sec">
+        <input type="text" id="chkName" placeholder="Enter your name to check status" style="width:70%;">
+        <button onclick="checkStatus()" style="padding: 10px; border-radius: 8px; border:none; background:#333; color:white;">Check</button>
+        <p id="res" style="font-weight:bold; margin-top:10px; color:var(--teal);"></p>
+    </div>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyeSTQhQ733OekwBLvJTE0iwsFPwl4PE8_2sOmOPtdxHj4y11k4RLljfW5nW53Ol9RW7A/exec';
+    const form = document.getElementById('leaveForm');
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        document.getElementById('subBtn').innerText = "Sending...";
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+            .then(() => { alert("Application Submitted!"); form.reset(); document.getElementById('subBtn').innerText = "Submit Application"; });
+    });
+
+    function checkStatus() {
+        const name = document.getElementById('chkName').value;
+        fetch(scriptURL + "?name=" + name).then(r => r.text()).then(t => document.getElementById('res').innerText = "Status: " + t);
+    }
+</script>
 </body>
 </html>
-
